@@ -1,0 +1,107 @@
+{
+  "data": [
+    {
+      "id": "0",
+      "title": "Sports",
+      "image_path": "assets/images/basketball.svg",
+      "questions": [
+        {
+          "question_id": "1",
+          "question_text": "Which country won the FIFA World Cup in 2018?",
+          "image_path": "assets/images/basketball.svg",
+          "options": [
+            { "option_id": "1", "option_text": "France" },
+            { "option_id": "2", "option_text": "Croatia" },
+            { "option_id": "3", "option_text": "Brazil" },
+            { "option_id": "4", "option_text": "Germany" }
+          ],
+          "correct_option_id": "1"
+        },
+        {
+          "question_id": "2",
+          "question_text": "Who holds the record for the most goals in a single Premier League season?",
+          "image_path": "assets/images/basketball.svg",
+          "options": [
+            { "option_id": "1", "option_text": "Thierry Henry" },
+            { "option_id": "2", "option_text": "Cristiano Ronaldo" },
+            { "option_id": "3", "option_text": "Alan Shearer" },
+            { "option_id": "4", "option_text": "Mohamed Salah" }
+          ],
+          "correct_option_id": "4"
+        },
+        {
+          "question_id": "3",
+          "question_text": "Which country has won the most Olympic medals in total?",
+          "image_path": "assets/images/basketball.svg",
+          "options": [
+            { "option_id": "1", "option_text": "United States" },
+            { "option_id": "2", "option_text": "Soviet Union" },
+            { "option_id": "3", "option_text": "Germany" },
+            { "option_id": "4", "option_text": "Great Britain" }
+          ],
+          "correct_option_id": "1"
+        },
+        {
+          "question_id": "4",
+          "question_text": "In which sport is the term 'home run' used?",
+          "image_path": "assets/images/basketball.svg",
+          "options": [
+            { "option_id": "1", "option_text": "Cricket" },
+            { "option_id": "2", "option_text": "Baseball" },
+            { "option_id": "3", "option_text": "Soccer" },
+            { "option_id": "4", "option_text": "Tennis" }
+          ],
+          "correct_option_id": "2"
+        },
+        {
+          "question_id": "5",
+          "question_text": "Who has won the most NBA championships as a player?",
+          "image_path": "assets/images/basketball.svg",
+          "options": [
+            { "option_id": "1", "option_text": "Michael Jordan" },
+            { "option_id": "2", "option_text": "Kobe Bryant" },
+            { "option_id": "3", "option_text": "Bill Russell" },
+            { "option_id": "4", "option_text": "LeBron James" }
+          ],
+          "correct_option_id": "3"
+        }       
+      ]
+    },
+    {
+      "id": "1",
+      "title": "Chemistry",
+      "image_path": "assets/images/science.svg",
+      "questions": []
+    },
+    {
+      "id": "2",
+      "title": "Math",
+      "image_path": "assets/images/maths.svg",
+      "questions": []
+    },
+    {
+      "id": "3",
+      "title": "History",
+      "image_path": "assets/images/history.svg",
+      "questions": []
+    },
+    {
+      "id": "4",
+      "title": "Biology",
+      "image_path": "assets/images/biotechnology.svg",
+      "questions": []
+    },
+    {
+      "id": "5",
+      "title": "Geography",
+      "image_path": "assets/images/geography.svg",
+      "questions": []
+    },
+    {
+      "id": "6",
+      "title": "Computer",
+      "image_path": "assets/images/computer.svg",
+      "questions": []
+    }
+  ]
+}

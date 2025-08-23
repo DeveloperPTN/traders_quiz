@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:traders_quiz/screens/create_question_screen.dart';
+import 'package:traders_quiz/screens/create_quiz_screen.dart';
 
 class QuizzesPage extends StatefulWidget {
   const QuizzesPage({super.key});
@@ -30,6 +32,11 @@ class _QuizzesPageState extends State<QuizzesPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
+                  tooltip: 'Play',
+                  icon: const Icon(Icons.play_circle_fill),
+                  onPressed: () => _editItem(context, index),
+                ),
+                IconButton(
                   tooltip: 'Edit',
                   icon: const Icon(Icons.edit),
                   onPressed: () => _editItem(context, index),
@@ -46,7 +53,10 @@ class _QuizzesPageState extends State<QuizzesPage> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _addItem(context),
+        onPressed: () => {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const CreateQuizPage()))
+        },
         icon: const Icon(Icons.add),
         label: const Text('Add'),
       ),
