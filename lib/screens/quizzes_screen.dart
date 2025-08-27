@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:traders_quiz/screens/create_question_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:traders_quiz/constants.dart';
+import 'package:traders_quiz/models/quiz_model.dart';
 import 'package:traders_quiz/screens/create_quiz_screen.dart';
+import 'package:traders_quiz/screens/play_quiz_screen.dart';
 
 class QuizzesPage extends StatefulWidget {
   const QuizzesPage({super.key});
@@ -10,7 +15,24 @@ class QuizzesPage extends StatefulWidget {
 }
 
 class _QuizzesPageState extends State<QuizzesPage> {
-  final List<String> _items = List.generate(8, (i) => "Item ${i + 1}");
+  Future<void> _loadQuiz() async {
+    final prefs = await SharedPreferences.getInstance();
+    //prefs.clear();
+    final data = prefs.getString("quiz_data");
+
+    if (data != null) {
+      List<dynamic> rawData = jsonDecode(data);
+      ConstQuiz.quizzes = rawData
+          .map((item) => QuizData.fromJson(item as Map<String, dynamic>))
+          .toList();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadQuiz();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,75 +41,87 @@ class _QuizzesPageState extends State<QuizzesPage> {
         title: const Text('Quizzes'),
       ),
       body: ListView.separated(
-        itemCount: _items.length,
+        itemCount: ConstQuiz.quizzes.length,
         separatorBuilder: (_, __) => const Divider(height: 1),
         itemBuilder: (context, index) {
-          final title = _items[index];
-
           return ListTile(
             leading: CircleAvatar(child: Text('${index + 1}')),
-            title: Text(title),
-            subtitle: Text('Description for $title'),
+            title: Text(ConstQuiz.quizzes[index].title),
+            subtitle: Text(ConstQuiz.quizzes[index].description),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  tooltip: 'Play',
-                  icon: const Icon(Icons.play_circle_fill),
-                  onPressed: () => _editItem(context, index),
-                ),
-                IconButton(
                   tooltip: 'Edit',
                   icon: const Icon(Icons.edit),
-                  onPressed: () => _editItem(context, index),
+                  onPressed: () => _editQuiz(context, index),
                 ),
                 IconButton(
                   tooltip: 'Delete',
                   icon: const Icon(Icons.delete),
-                  onPressed: () => _confirmDelete(context, index),
+                  onPressed: () => _deleteQuiz(context, index),
                 ),
               ],
             ),
-            onTap: () => _editItem(context, index),
+            onTap: () => {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          PlayQuizPage(quizData: ConstQuiz.quizzes[index])))
+            },
           );
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const CreateQuizPage()))
-        },
+        onPressed: _addQuiz,
         icon: const Icon(Icons.add),
         label: const Text('Add'),
       ),
     );
   }
 
-  Future<void> _addItem(BuildContext context) async {
-    final text = await _showTextInputDialog(context, title: 'Add item');
-    if (text != null && text.trim().isNotEmpty) {
-      setState(() => _items.add(text.trim()));
-    }
-  }
+  Future<void> _saveQuiz() async {
+    final prefs = await SharedPreferences.getInstance();
 
-  Future<void> _editItem(BuildContext context, int index) async {
-    final current = _items[index];
-    final text = await _showTextInputDialog(
-      context,
-      title: 'Edit item',
-      initialValue: current,
+    await prefs.setString("quiz_data", jsonEncode(ConstQuiz.quizzes));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Quiz Saved Locally ✅")),
     );
-    if (text != null && text.trim().isNotEmpty && text.trim() != current) {
-      setState(() => _items[index] = text.trim());
+  }
+
+  Future<void> _addQuiz() async {
+    final result = await Navigator.push<QuizData>(
+      context,
+      MaterialPageRoute(
+          builder: (_) => const CreateQuizPage(quizIndex: -1, quizData: null)),
+    );
+
+    if (result != null) {
+      setState(() => ConstQuiz.quizzes.add(result));
     }
   }
 
-  Future<void> _confirmDelete(BuildContext context, int index) async {
+  Future<void> _editQuiz(BuildContext context, int index) async {
+    final result = await Navigator.push<QuizData>(
+      context,
+      MaterialPageRoute(
+          builder: (_) => CreateQuizPage(
+              quizIndex: index, quizData: ConstQuiz.quizzes[index])),
+    );
+    if (result != null) {
+      setState(() => ConstQuiz.quizzes[index] = result);
+    }
+  }
+
+  Future<void> _deleteQuiz(BuildContext context, int index) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete item'),
-        content: Text('Are you sure you want to delete "${_items[index]}"?'),
+        title: const Text('Delete Question'),
+        content: Text(
+            'Are you sure you want to delete "${ConstQuiz.quizzes[index]}"?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -100,7 +134,8 @@ class _QuizzesPageState extends State<QuizzesPage> {
       ),
     );
     if (ok == true) {
-      setState(() => _items.removeAt(index));
+      setState(() => ConstQuiz.quizzes.removeAt(index));
+      _saveQuiz();
     }
   }
 

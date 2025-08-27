@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:traders_quiz/screens/quizzes_screen.dart';
 
-enum UserRole { Admin, Member, Guest }
+enum UserRole { Guest, Member, Admin }
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -12,7 +12,7 @@ class SignInPage extends StatefulWidget {
 }
 
 class _SignInPageState extends State<SignInPage> {
-  UserRole? _selectedRole = UserRole.Admin;
+  UserRole? _selectedRole = UserRole.Guest;
   final TextEditingController _textController = TextEditingController();
 
   void _handleSubmit() {
@@ -46,9 +46,9 @@ class _SignInPageState extends State<SignInPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildRadio(UserRole.Admin, 'Admin'),
-                  _buildRadio(UserRole.Member, 'Member'),
                   _buildRadio(UserRole.Guest, 'Guest'),
+                  _buildRadio(UserRole.Member, 'Member'),
+                  _buildRadio(UserRole.Admin, 'Admin'),
                 ],
               ),
               const SizedBox(height: 20),
@@ -57,9 +57,11 @@ class _SignInPageState extends State<SignInPage> {
                   _selectedRole == UserRole.Member)
                 TextField(
                   controller: _textController,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Quiz Code',
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: _selectedRole == UserRole.Admin
+                        ? 'Password'
+                        : 'Quiz Code',
                   ),
                   textAlign: TextAlign.center,
                 ),

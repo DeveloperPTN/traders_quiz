@@ -4,7 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:traders_quiz/models/question_model.dart';
 
 class CreateQuestionPage extends StatefulWidget {
-  const CreateQuestionPage({super.key});
+  final Question? question;
+  const CreateQuestionPage({super.key, required this.question});
 
   @override
   State<CreateQuestionPage> createState() => _CreateQuestionPageState();
@@ -21,18 +22,41 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
   @override
   void initState() {
     super.initState();
-    _addAnswerField(); // start with 1 answer row
+    if (widget.question == null) {
+      _addAnswerField(); // start with 1 answer row
+    } else {
+      _editQuestion();
+    }
   }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    const pickedFile = null;
-    await picker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
       });
     }
+  }
+
+  void _editQuestion() {
+    setState(() {
+      _questionController.text = widget.question!.questionText;
+      _pointsController.text = widget.question!.points.toString();
+      if (widget.question != null &&
+          widget.question!.questionImagePath != null &&
+          widget.question!.questionImagePath.toString() != "") {
+        _imageFile = File(widget.question!.questionImagePath.toString());
+      }
+
+      for (var val in widget.question!.options) {
+        _answers.add({
+          "answer": TextEditingController(text: val.optionText),
+          "points": TextEditingController(text: val.optionPoints.toString()),
+          "correct": val.optionCorrect,
+        });
+      }
+    });
   }
 
   void _addAnswerField() {
@@ -60,20 +84,20 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
       int id = 1;
       for (var val in _answers) {
         answers.add(Option(
-            optionId: id,
             optionText: val["answer"]!.text,
             optionPoints: int.tryParse(val["points"]!.text) ?? 0,
-            optionCorrect: val["correct"] ?? false));
+            optionCorrect: val["correct"] ?? false,
+            optionAnswer: false));
         id++;
       }
 
       final data = Question(
-          questionId: 0,
           questionText: question,
           questionImagePath: _imageFile != null ? _imageFile!.path : "",
           questionType: _selectedType,
           points: points,
-          options: answers);
+          options: answers,
+          answer: "");
 
       // TODO: Save or send this data
       debugPrint("Quiz Data: ${data.toJson()}");
@@ -92,7 +116,10 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Create Quiz Question")),
+      appBar: AppBar(
+          title: Text(widget.question == null
+              ? "Create Quiz Question"
+              : "Update Quiz Question")),
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Form(
@@ -204,7 +231,7 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
                         ],
                       ),
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
+                        icon: const Icon(Icons.delete),
                         onPressed: () => _removeAnswerField(index),
                       ),
                     );
@@ -238,7 +265,9 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
               ElevatedButton.icon(
                 onPressed: _submit,
                 icon: const Icon(Icons.check),
-                label: const Text("Create Question"),
+                label: Text(widget.question == null
+                    ? "Create Question"
+                    : "Update Question"),
               ),
             ],
           ),
