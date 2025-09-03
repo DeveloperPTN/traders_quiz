@@ -43,6 +43,7 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
     setState(() {
       _questionController.text = widget.question!.questionText;
       _pointsController.text = widget.question!.points.toString();
+      _selectedType = widget.question!.questionType;
       if (widget.question != null &&
           widget.question!.questionImagePath != null &&
           widget.question!.questionImagePath.toString() != "") {
@@ -135,14 +136,6 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
               ),
               const SizedBox(height: 12),
 
-              // Points Input
-              TextFormField(
-                controller: _pointsController,
-                decoration: const InputDecoration(labelText: "Points"),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-
               // Image Upload
               Row(
                 children: [
@@ -176,7 +169,7 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
                     _answers.clear();
                     if (_selectedType != "Paragraph") {
                       _addAnswerField();
-                    }
+                    } else {}
                   });
                 },
               ),
@@ -250,7 +243,6 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
               // Paragraph points input
               if (_selectedType == "Paragraph") ...[
                 const SizedBox(height: 10),
-                const Text("Points for paragraph answer:"),
                 TextFormField(
                   controller: _pointsController,
                   decoration: const InputDecoration(
@@ -259,20 +251,19 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
                   keyboardType: TextInputType.number,
                 ),
               ],
-
               const SizedBox(height: 30),
-
-              ElevatedButton.icon(
-                onPressed: _submit,
-                icon: const Icon(Icons.check),
-                label: Text(widget.question == null
-                    ? "Create Question"
-                    : "Update Question"),
-              ),
             ],
           ),
         ),
       ),
+      persistentFooterButtons: <Widget>[
+        ElevatedButton.icon(
+          onPressed: _submit,
+          icon: const Icon(Icons.check),
+          label: Text(
+              widget.question == null ? "Create Question" : "Update Question"),
+        ),
+      ],
     );
   }
 }

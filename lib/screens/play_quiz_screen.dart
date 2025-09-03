@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:traders_quiz/models/question_model.dart';
 import 'package:traders_quiz/models/quiz_model.dart';
+import 'package:fullscreen_image_viewer/fullscreen_image_viewer.dart';
+import 'package:traders_quiz/screens/result_screen.dart';
 
 class PlayQuizPage extends StatefulWidget {
   final QuizData quizData;
@@ -15,45 +17,54 @@ class PlayQuizPage extends StatefulWidget {
 class _PlayQuizPageState extends State<PlayQuizPage> {
   final TextEditingController _answerTextCtrl = TextEditingController();
   void _submitQuiz() {
-    int score = 0;
-    int totalPoints = 0;
-
-    for (var question in widget.quizData.questions) {
-      totalPoints += question.points;
-    }
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Quiz Result"),
-        content: Text("Your Score: $score / $totalPoints"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
-          )
-        ],
-      ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (_) => QuizResultPage(
+                score: userPoints,
+                total: totalPoints,
+                quizData: widget.quizData,
+              )),
     );
   }
 
-  bool _listsEqual(List<String> a, List<String> b) {
-    final setA = a.toSet();
-    final setB = b.toSet();
-    return setA.length == setB.length && setA.containsAll(setB);
-  }
-
-  int currentIndex = 0; // current question index
-  Option? selectedOption; // user’s selected answer
-  int score = 0; // total score
+  int currentIndex = 0;
+  Option? selectedOption;
+  int userPoints = 0;
+  int totalPoints = 0;
 
   void _nextQuestion() {
     // check answer
-    if (selectedOption == widget.quizData.questions[currentIndex].answer) {
-      score++;
+    Question question = widget.quizData.questions[currentIndex];
+    if (question.questionType == "Single Select") {
+      int maxPoint = 0;
+      for (Option opt in question.options) {
+        if (opt.optionPoints > maxPoint) maxPoint = opt.optionPoints;
+        if (selectedOption != null &&
+            selectedOption?.optionText == opt.optionText) {
+          opt.optionAnswer = true;
+        }
+      }
+      totalPoints += maxPoint;
+      if (selectedOption != null) {
+        userPoints += selectedOption!.optionPoints;
+      }
+    } else if (question.questionType == "Multiple Choice") {
+      for (Option opt in question.options) {
+        totalPoints += opt.optionPoints;
+        if (opt.optionAnswer == opt.optionCorrect) {
+          userPoints += opt.optionPoints;
+        }
+      }
+    } else if (question.questionType == "Paragraph") {
+      widget.quizData.questions[currentIndex].answer = _answerTextCtrl.text;
+      totalPoints += question.points;
+      if (_answerTextCtrl.text.isNotEmpty) {
+        userPoints += question.points;
+      }
     }
 
-    if (currentIndex < widget.quizData.questions.length) {
+    if (currentIndex < widget.quizData.questions.length - 1) {
       setState(() {
         currentIndex++;
         selectedOption = null; // reset selection
@@ -61,28 +72,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
     } else {
       // quiz finished
       _submitQuiz();
-      _showResultDialog();
     }
-  }
-
-  void _showResultDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Quiz Completed"),
-        content:
-            Text("Your score is $score / ${widget.quizData.questions.length}"),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.pop(context); // exit quiz page
-            },
-            child: const Text("Close"),
-          )
-        ],
-      ),
-    );
   }
 
   @override
@@ -97,14 +87,32 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Play Quiz")),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (q.questionImagePath != null &&
                 q.questionImagePath.toString() != "")
-              Image.file(File(q.questionImagePath!)),
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    FullscreenImageViewer.open(
+                      context: context,
+                      child: Hero(
+                        tag: 'hero_image', // Unique tag for Hero animation
+                        child: Image.file(
+                          File(q.questionImagePath.toString()),
+                        ),
+                      ),
+                    );
+                  },
+                  child: Image.file(
+                    File(q.questionImagePath.toString()),
+                    height: 300,
+                  ),
+                ),
+              ),
             const SizedBox(height: 20),
             Text(
               "${currentIndex + 1}. ${q.questionText}",
@@ -134,7 +142,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                           });
                         },
                       );
-                    }).toList(),
+                    }),
                   } else ...{
                     if (q.questionType == "Multiple Choice") ...{
                       ...q.options.map((option) {
@@ -147,7 +155,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                             });
                           },
                         );
-                      }).toList(),
+                      }),
                     },
                   },
                 },
@@ -156,15 +164,14 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
           ],
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(12),
-        child: ElevatedButton.icon(
+      persistentFooterButtons: <Widget>[
+        ElevatedButton.icon(
           onPressed: _nextQuestion,
           label: Text(currentIndex == widget.quizData.questions.length - 1
               ? "Finish"
               : "Next"),
         ),
-      ),
+      ],
     );
   }
 }

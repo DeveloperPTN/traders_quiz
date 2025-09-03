@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:traders_quiz/api_service.dart';
 import 'package:traders_quiz/constants.dart';
 import 'package:traders_quiz/models/quiz_model.dart';
 import 'package:traders_quiz/screens/create_question_screen.dart';
@@ -17,6 +18,7 @@ class CreateQuizPage extends StatefulWidget {
 }
 
 class _CreateQuizPageState extends State<CreateQuizPage> {
+  final _codeCtrl = TextEditingController();
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final List<Question> _questions = [];
@@ -38,6 +40,7 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
 
   void _editQuiz() {
     setState(() {
+      _codeCtrl.text = widget.quizData!.code;
       _titleCtrl.text = widget.quizData!.title;
       _descCtrl.text = widget.quizData!.description;
       for (var val in widget.quizData!.questions) {
@@ -92,32 +95,55 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
     }
   }
 
-  void _createQuiz() {
+  Future<void> _createQuiz() async {
     final quiz = QuizData(
-        id: widget.quizData == null ? 0 : widget.quizData!.id,
+        id: 0,
+        code: _codeCtrl.text,
         title: _titleCtrl.text,
         description: _descCtrl.text,
         questions: _questions);
 
-    if (widget.quizIndex >= 0) {
-      ConstQuiz.quizzes[widget.quizIndex] = quiz; //Edit Existing
+    final result = await ApiService.createQuiz(quiz);
+
+    if (result['message'] == 'Success') {
+      ConstQuiz.quizzes = await ApiService.getQuizzes();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Quiz Created")),
+      );
+      Navigator.pop(
+        context,
+        quiz,
+      );
     } else {
-      ConstQuiz.quizzes.add(quiz); //Add New
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['error'])),
+      );
     }
+  }
 
-    _saveQuiz();
-    debugPrint("QUIZ CREATED: ${quiz.toJson()}");
+  Future<void> _updateQuiz() async {
+    final quiz = QuizData(
+        id: widget.quizData!.id,
+        code: _codeCtrl.text,
+        title: _titleCtrl.text,
+        description: _descCtrl.text,
+        questions: _questions);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content:
-              Text(widget.quizData == null ? "Quiz Created!" : "Quiz Updated")),
-    );
+    final result = await ApiService.updateQuiz(quiz);
 
-    Navigator.pop(
-      context,
-      quiz,
-    );
+    if (result['message'] == 'Success') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Quiz Updated")),
+      );
+      Navigator.pop(
+        context,
+        quiz,
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['error'])),
+      );
+    }
   }
 
   Future<void> _saveQuiz() async {
@@ -140,6 +166,10 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            TextField(
+              controller: _codeCtrl,
+              decoration: const InputDecoration(labelText: "Quiz Code"),
+            ),
             TextField(
               controller: _titleCtrl,
               decoration: const InputDecoration(labelText: "Quiz Title"),
@@ -182,25 +212,22 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
                       },
                     ),
             ),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _addQuestion,
-                  icon: const Icon(Icons.add),
-                  label: const Text("Add Question"),
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: _createQuiz,
-                  icon: const Icon(Icons.check),
-                  label: Text(
-                      widget.quizData == null ? "Create Quiz" : "Update Quiz"),
-                ),
-              ],
-            )
           ],
         ),
       ),
+      persistentFooterButtons: <Widget>[
+        ElevatedButton.icon(
+          onPressed: _addQuestion,
+          icon: const Icon(Icons.add),
+          label: const Text("Add Question"),
+        ),
+        const SizedBox(width: 12),
+        ElevatedButton.icon(
+          onPressed: widget.quizData == null ? _createQuiz : _updateQuiz,
+          icon: const Icon(Icons.check),
+          label: Text(widget.quizData == null ? "Create Quiz" : "Update Quiz"),
+        ),
+      ],
     );
   }
 }

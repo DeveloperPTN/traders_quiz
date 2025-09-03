@@ -24,11 +24,13 @@ class QuizModel {
 
 class QuizData {
   int id;
+  String code;
   String title;
   String description;
   List<Question> questions;
   QuizData({
     required this.id,
+    required this.code,
     required this.title,
     required this.description,
     required this.questions,
@@ -36,6 +38,7 @@ class QuizData {
 
   factory QuizData.fromJson(Map<String, dynamic> json) => QuizData(
         id: json["id"],
+        code: json["code"],
         title: json["title"],
         description: json["description"],
         questions: List<Question>.from(
@@ -44,6 +47,7 @@ class QuizData {
 
   Map<String, dynamic> toJson() => {
         "id": id,
+        "code": code,
         "title": title,
         "description": description,
         "questions": List<dynamic>.from(questions.map((x) => x.toJson())),

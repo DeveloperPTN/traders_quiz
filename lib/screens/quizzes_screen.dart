@@ -8,30 +8,17 @@ import 'package:traders_quiz/screens/create_quiz_screen.dart';
 import 'package:traders_quiz/screens/play_quiz_screen.dart';
 
 class QuizzesPage extends StatefulWidget {
-  const QuizzesPage({super.key});
+  final UserRole userRole;
+  const QuizzesPage({super.key, required this.userRole});
 
   @override
   State<QuizzesPage> createState() => _QuizzesPageState();
 }
 
 class _QuizzesPageState extends State<QuizzesPage> {
-  Future<void> _loadQuiz() async {
-    final prefs = await SharedPreferences.getInstance();
-    //prefs.clear();
-    final data = prefs.getString("quiz_data");
-
-    if (data != null) {
-      List<dynamic> rawData = jsonDecode(data);
-      ConstQuiz.quizzes = rawData
-          .map((item) => QuizData.fromJson(item as Map<String, dynamic>))
-          .toList();
-    }
-  }
-
   @override
   void initState() {
     super.initState();
-    _loadQuiz();
   }
 
   @override
@@ -48,21 +35,25 @@ class _QuizzesPageState extends State<QuizzesPage> {
             leading: CircleAvatar(child: Text('${index + 1}')),
             title: Text(ConstQuiz.quizzes[index].title),
             subtitle: Text(ConstQuiz.quizzes[index].description),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  tooltip: 'Edit',
-                  icon: const Icon(Icons.edit),
-                  onPressed: () => _editQuiz(context, index),
-                ),
-                IconButton(
-                  tooltip: 'Delete',
-                  icon: const Icon(Icons.delete),
-                  onPressed: () => _deleteQuiz(context, index),
-                ),
-              ],
-            ),
+            trailing: widget.userRole == UserRole.Admin
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: 'Edit',
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _editQuiz(context, index),
+                      ),
+                      IconButton(
+                        tooltip: 'Delete',
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _deleteQuiz(context, index),
+                      ),
+                    ],
+                  )
+                : const SizedBox(
+                    width: 10,
+                  ),
             onTap: () => {
               Navigator.push(
                   context,
@@ -73,11 +64,15 @@ class _QuizzesPageState extends State<QuizzesPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _addQuiz,
-        icon: const Icon(Icons.add),
-        label: const Text('Add'),
-      ),
+      floatingActionButton: widget.userRole == UserRole.Admin
+          ? FloatingActionButton.extended(
+              onPressed: _addQuiz,
+              icon: const Icon(Icons.add),
+              label: const Text('Add'),
+            )
+          : const SizedBox(
+              width: 10,
+            ),
     );
   }
 
