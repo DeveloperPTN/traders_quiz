@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:traders_quiz/api_service.dart';
 import 'package:traders_quiz/constants.dart';
 import 'package:traders_quiz/models/quiz_model.dart';
 import 'package:traders_quiz/screens/create_question_screen.dart';
 import 'package:traders_quiz/models/question_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateQuizPage extends StatefulWidget {
   final int quizIndex;
@@ -112,7 +109,7 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
       );
       Navigator.pop(
         context,
-        quiz,
+        ConstQuiz.quizzes,
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -137,23 +134,13 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
       );
       Navigator.pop(
         context,
-        quiz,
+        ConstQuiz.quizzes,
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result['error'])),
       );
     }
-  }
-
-  Future<void> _saveQuiz() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    await prefs.setString("quiz_data", jsonEncode(ConstQuiz.quizzes));
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Quiz Saved Locally ✅")),
-    );
   }
 
   @override
@@ -170,6 +157,7 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
               controller: _codeCtrl,
               decoration: const InputDecoration(labelText: "Quiz Code"),
             ),
+            const SizedBox(height: 8),
             TextField(
               controller: _titleCtrl,
               decoration: const InputDecoration(labelText: "Quiz Title"),
@@ -190,7 +178,10 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
                       itemBuilder: (context, i) {
                         final q = _questions[i];
                         return ListTile(
-                          leading: CircleAvatar(child: Text("${i + 1}")),
+                          leading: CircleAvatar(
+                            child: Text("${i + 1}"),
+                            backgroundColor: Colors.blueGrey,
+                          ),
                           title: Text(q.questionText),
                           subtitle: Text(q.questionType),
                           trailing: Row(

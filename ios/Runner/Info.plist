@@ -43,7 +43,14 @@
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<key>UIApplicationSupportsIndirectInputEvents</key>	
 	<true/>
+	<!-- 🔑 App Transport Security (Allow HTTP requests) -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- Allow all HTTP traffic (not recommended for production) -->
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

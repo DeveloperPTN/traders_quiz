@@ -39,7 +39,6 @@ class _QuizResultPageState extends State<QuizResultPage>
     bool isPassed = widget.score >= (widget.total / 2);
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(title: const Text("Quiz Result")),
       body: Center(
         child: Column(

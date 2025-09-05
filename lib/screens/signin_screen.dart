@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:traders_quiz/models/quiz_model.dart';
 import 'package:traders_quiz/screens/play_quiz_screen.dart';
 import 'package:traders_quiz/screens/quizzes_screen.dart';

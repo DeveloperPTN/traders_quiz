@@ -128,7 +128,7 @@ class QuizReviewPage extends StatelessWidget {
 
       // Show score at bottom
       bottomNavigationBar: Container(
-        color: Colors.blueGrey[50],
+        color: const Color.fromARGB(255, 11, 19, 22),
         padding: const EdgeInsets.all(16),
         child: Text(
           "Your Score: $userPoints / $totalPoints",

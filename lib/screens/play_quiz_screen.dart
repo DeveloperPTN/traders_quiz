@@ -101,14 +101,14 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                       context: context,
                       child: Hero(
                         tag: 'hero_image', // Unique tag for Hero animation
-                        child: Image.file(
-                          File(q.questionImagePath.toString()),
+                        child: Image.network(
+                          q.questionImagePath.toString(),
                         ),
                       ),
                     );
                   },
-                  child: Image.file(
-                    File(q.questionImagePath.toString()),
+                  child: Image.network(
+                    q.questionImagePath.toString(),
                     height: 300,
                   ),
                 ),

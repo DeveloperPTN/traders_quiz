@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:traders_quiz/api_service.dart';
 import 'package:traders_quiz/models/question_model.dart';
 
 class CreateQuestionPage extends StatefulWidget {
@@ -15,7 +16,10 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
   final _formKey = GlobalKey<FormState>();
   final _questionController = TextEditingController();
   final _pointsController = TextEditingController();
+  Image? _image = null;
   File? _imageFile;
+  String _imagePath = "";
+  bool _uploading = false;
   String _selectedType = "Single Select"; // default
   final List<Map<String, dynamic>> _answers = [];
 
@@ -27,6 +31,19 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
     } else {
       _editQuestion();
     }
+  }
+
+  Future<void> _uploadToS3() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+        _uploading = true;
+      });
+    }
+    _imagePath = await ApiService.uploadImage(image: _imageFile);
+    setState(() => _uploading = false);
   }
 
   Future<void> _pickImage() async {
@@ -47,7 +64,7 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
       if (widget.question != null &&
           widget.question!.questionImagePath != null &&
           widget.question!.questionImagePath.toString() != "") {
-        _imageFile = File(widget.question!.questionImagePath.toString());
+        _image = Image.network(widget.question!.questionImagePath.toString());
       }
 
       for (var val in widget.question!.options) {
@@ -94,7 +111,7 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
 
       final data = Question(
           questionText: question,
-          questionImagePath: _imageFile != null ? _imageFile!.path : "",
+          questionImagePath: _imagePath,
           questionType: _selectedType,
           points: points,
           options: answers,
@@ -141,11 +158,15 @@ class _CreateQuestionPageState extends State<CreateQuestionPage> {
                 children: [
                   _imageFile != null
                       ? Image.file(_imageFile!, width: 80, height: 80)
-                      : const Icon(Icons.image, size: 80),
+                      : _image != null
+                          ? Image.network(_imagePath, width: 80, height: 80)
+                          : const Icon(Icons.image, size: 80),
                   const SizedBox(width: 10),
                   ElevatedButton(
-                    onPressed: _pickImage,
-                    child: const Text("Upload Image"),
+                    onPressed: _uploadToS3,
+                    child: _uploading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text("Upload Image"),
                   ),
                 ],
               ),
